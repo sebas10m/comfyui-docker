@@ -2,7 +2,7 @@
 # Defines the versions of ComfyUI, ComfyUI Manager, and PyTorch to use
 ARG COMFYUI_VERSION=v0.3.62
 ARG COMFYUI_MANAGER_VERSION=3.35
-ARG PYTORCH_VERSION=2.8.0-cuda12.9-cudnn9-runtime
+ARG PYTORCH_VERSION=2.8.0-cuda12.9-cudnn9-devel
 
 # This image is based on the latest official PyTorch image, because it already contains CUDA, CuDNN, and PyTorch
 FROM pytorch/pytorch:${PYTORCH_VERSION}
@@ -16,11 +16,24 @@ RUN apt update --assume-yes && \
         libglib2.0-0 && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake pkg-config git sudo libgl1-mesa-glx libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV CUDA_HOME=/usr/local/cuda
+ENV CUDA_PATH=/usr/local/cuda
+ENV PATH=/usr/local/cuda/bin:$PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+RUN ln -sfn /usr/local/cuda-12.9 /usr/local/cuda || true
+
 # Clones the ComfyUI repository and checks out the latest release
 RUN git clone --depth=1 https://github.com/comfyanonymous/ComfyUI.git /opt/comfyui && \
     cd /opt/comfyui && \
     git fetch origin ${COMFYUI_VERSION} && \
     git checkout FETCH_HEAD
+
+RUN pip install --no-cache-dir "sageattention==1.0.6" "cupy-cuda12x"
+RUN nvcc --version && ptxas --version
 
 # Clones the ComfyUI Manager repository and checks out the latest release; ComfyUI Manager is an extension for ComfyUI that enables users to install
 # custom nodes and download models directly from the ComfyUI interface; instead of installing it to "/opt/comfyui/custom_nodes/ComfyUI-Manager", which

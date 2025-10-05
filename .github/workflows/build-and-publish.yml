@@ -38,18 +38,20 @@ jobs:
     steps:
 
       # Checks out the repository so that the workflow can access the files in the repository
-      - name: Maximize build space (give it to Docker)
+# BEFORE any Docker step (can be before or after checkout)
+      - name: Maximize build space for Docker
         uses: easimon/maximize-build-space@v10
         with:
-          build-mount-path: '/var/lib/docker' # <-- key change
-          root-reserve-mb: '8192'             # keep ~8GB free on /
-          temp-reserve-mb: '1024'             # keep ~1GB on /mnt
-          swap-size-mb: '0'                   # reclaim 4GB (optional)
+          build-mount-path: '/var/lib/docker' # give the big LV to Docker's data dir
+          root-reserve-mb: '8192'
+          temp-reserve-mb: '1024'
+          swap-size-mb: '256'                 # must be > 0; 0 causes lvcreate error
           remove-android: 'true'
           remove-dotnet: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
+
 
       - name: Checkout
         uses: actions/checkout@v4

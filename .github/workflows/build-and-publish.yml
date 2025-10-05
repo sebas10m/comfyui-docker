@@ -42,16 +42,23 @@ jobs:
       - name: Maximize build space for Docker
         uses: easimon/maximize-build-space@v10
         with:
-          build-mount-path: '/var/lib/docker' # give the big LV to Docker's data dir
+          build-mount-path: '/var/lib/docker'
           root-reserve-mb: '8192'
           temp-reserve-mb: '1024'
-          swap-size-mb: '256'                 # must be > 0; 0 causes lvcreate error
+          swap-size-mb: '256'            # must be > 0
           remove-android: 'true'
           remove-dotnet: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true'
+          remove-docker-images: 'true'   # ✅ images only
+          # DO NOT set: remove-docker: true
 
+      - name: Restart Docker (pick up new /var/lib/docker mount)
+        run: |
+          sudo systemctl daemon-reload || true
+          sudo systemctl restart docker
+          sleep 2
+          docker info --format 'Root={{.DockerRootDir}} | Driver={{.Driver}}'
 
       - name: Checkout
         uses: actions/checkout@v4

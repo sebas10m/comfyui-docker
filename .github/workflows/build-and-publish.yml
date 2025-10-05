@@ -38,18 +38,26 @@ jobs:
     steps:
 
       # Checks out the repository so that the workflow can access the files in the repository
-      - name: Maximize build space (for Docker)
+      - name: Maximize build space (give it to Docker)
         uses: easimon/maximize-build-space@v10
         with:
+          build-mount-path: '/var/lib/docker' # <-- key change
+          root-reserve-mb: '8192'             # keep ~8GB free on /
+          temp-reserve-mb: '1024'             # keep ~1GB on /mnt
+          swap-size-mb: '0'                   # reclaim 4GB (optional)
           remove-android: 'true'
           remove-dotnet: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-          root-reserve-mb: '4096'             # keep a few GB on /
-          swap-size-mb: '1024'
+          remove-docker-images: 'true'
 
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Show free space and docker root
+        run: |
+          df -h
+          docker info | sed -n 's/.*Docker Root Dir: //p''
 
       # Installs Python, which is used to extract the version of ComfyUI and the ComfyUI Manager from the Dockerfile using a regular expression
       - name: Install Python

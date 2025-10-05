@@ -45,7 +45,6 @@ jobs:
           remove-dotnet: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-          build-mount-path: /var/lib/docker   # put the big volume under Docker's data-root
           root-reserve-mb: '4096'             # keep a few GB on /
           swap-size-mb: '1024'
 

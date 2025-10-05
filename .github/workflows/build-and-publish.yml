@@ -56,10 +56,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show free space and docker root
+      - name: Show free space and Docker root
         run: |
+          set -euo pipefail
+          echo "Filesystem usage:"
           df -h
-          docker info | sed -n 's/.*Docker Root Dir: //p''
+          echo "Docker Root Dir:"
+          docker info --format '{{.DockerRootDir}}'
+          echo "Docker disk usage:"
+          docker system df -v || true
+
 
       # Installs Python, which is used to extract the version of ComfyUI and the ComfyUI Manager from the Dockerfile using a regular expression
       - name: Install Python
